@@ -1,0 +1,265 @@
+.plugin#plugin-core-server
+	.content-wrap
+		h1 Server settings
+
+		.btn(v-on='click: applySettings') Apply
+
+		.btn Save settings
+		.btn Load settings
+
+		.btn(v-on='click: exportConfig') Export settings
+
+		//.filter Filter options:
+
+		section
+			h1 Server information
+
+			.serverinfo
+				.input-text.name
+					label(for='s-var-server_name') Server name
+					input#s-var-server_name(type='text', maxlength='64', v-model='vars.server_name')
+				.input-text.desc
+					label(for='s-var-server_description') Description
+					textarea#s-var-server_description(type='text', maxlength='256', v-model='vars.server_description')
+				.input-text.message
+					label(for='s-var-server_message') Welcome message
+					textarea#s-var-server_message(type='text', maxlength='256', v-model='vars.server_message')
+
+			.servertype
+				.static
+					label Server type
+					div {{vars.server_type || 'Not set'}}
+				.static
+					label Experience
+					div {{vars.mp_experience || 'Not set'}}
+				.static
+					label Server size
+					div {{vars.max_players || 'Not set'}}
+
+		section
+			h1 Configuration
+
+			.cheat-protection
+				.input-checkbox
+					input#s-var-pb_enabled(type='checkbox', v-model='vars.pb_enabled')
+					label(for='s-var-pb_enabled') PunkBuster
+				.input-checkbox
+					input#s-var-ff_enabled(type='checkbox', v-model='vars.ff_enabled')
+					label(for='s-var-ff_enabled') FairFight
+
+			.group
+				fieldset
+					legend Idle players
+
+					.input-text
+						label(for='s-var-idle_timeout') Idle timeout
+						input#s-var-idle_timeout(type='number', min=1, max=3600, v-model='vars.idle_timeout')
+						span minutes
+					.input-checkbox
+						input#s-var-enable_idle_ban(type='checkbox', v-model='vars.enable_idle_ban')
+						label(for='s-var-enable_idle_ban') Ban idle players
+					.input-text(v-if='vars.enable_idle_ban')
+						label(for='s-var-idle_ban_rounds') Ban idle players for
+						input#s-var-idle_ban_rounds(type='number', min=1, max=100, v-model='vars.idle_ban_rounds')
+						span rounds
+
+				fieldset
+					legend Spectators
+
+					.input-text
+						label(for='s-var-max_spectators') Spectator limit
+						input#s-var-max_spectators(type='number', min=1, max=4, v-model='vars.max_spectators')
+						span spectators
+					.input-checkbox
+						input#s-var-always_allow_spectators(type='checkbox', v-model='vars.always_allow_spectators')
+						label(for='s-var-always_allow_spectators') Allow public spectators
+					.player-list(v-if='!vars.always_allow_spectators')
+						.input-text
+							label(for='s-add-spectator') Add spectator
+							input#s-add-spectator(type='text', v-model='addSpectatorPlayerName', v-on='keydown: addSpectator | key enter')
+						ul
+							li(v-repeat='spectators | sort')
+								.player_name {{$value}}
+								.remove(v-on='click: removeSpectator($value)') Remove
+
+
+			.group
+				fieldset
+					legend Commander
+					.input-checkbox
+						input#s-var-commander(type='checkbox', v-model='vars.commander')
+						label(for='s-var-commander') Enable commander
+
+				fieldset
+					legend Server passwords
+
+					.input-text
+						label(for='s-var-game_password') Game password
+						input#s-var-game_password(v-model='vars.game_password', v-attr='type: show_game_password ? "text" : "password"')
+
+						input#s-var-show_game_password(type='checkbox', v-model='show_game_password')
+						label(for='s-var-show_game_password') Show plaintext password
+					.input-text
+						label(for='s-var-admin_password') Admin password
+						input#s-var-admin_password(v-model='vars.admin_password', v-attr='type: show_admin_password ? "text" : "password"')
+
+						input#s-var-show_admin_password(type='checkbox', v-model='show_admin_password')
+						label(for='s-var-show_admin_password') Show plaintext password
+
+			fieldset
+				legend Faction overrides
+
+		section
+			h1 Gameplay
+			p TODO add search filter! Game preset + lock -- Hardcore -- unlocks dropdown (based on stats etc)
+
+			.gameplay-settings
+				.input-checkbox
+					input#s-var-friendly_fire(type='checkbox', v-model='vars.friendly_fire')
+					label(for='s-var-friendly_fire') Friendly fire
+				.input-checkbox
+					input#s-var-kill_cam(type='checkbox', v-model='vars.kill_cam')
+					label(for='s-var-kill_cam') Killcam
+				.input-checkbox
+					input#s-var-minimap(type='checkbox', v-model='vars.minimap')
+					label(for='s-var-minimap') Minimap
+				.input-checkbox
+					input#s-var-minimap_spotting(type='checkbox', v-model='vars.minimap_spotting')
+					label(for='s-var-minimap_spotting') Minimap spotting
+				.input-checkbox
+					input#s-var-crosshair(type='checkbox', v-model='vars.crosshair')
+					label(for='s-var-crosshair') Crosshairs
+				.input-checkbox
+					input#s-var-name_tag(type='checkbox', v-model='vars.name_tag')
+					label(for='s-var-name_tag') Name tags
+				.input-checkbox
+					input#s-var-regenerate_health(type='checkbox', v-model='vars.regenerate_health')
+					label(for='s-var-regenerate_health') Health regen
+				.input-checkbox
+					input#s-var-hud(type='checkbox', v-model='vars.hud')
+					label(for='s-var-hud') HUD
+				.input-checkbox
+					input#s-var-only_squad_leader_spawn(type='checkbox', v-model='vars.only_squad_leader_spawn')
+					label(for='s-var-only_squad_leader_spawn') Squad leader spawn only
+				.input-checkbox
+					input#s-var-hit_indicators(type='checkbox', v-model='vars.hit_indicators')
+					label(for='s-var-hit_indicators') Hit indicators
+				.input-checkbox
+					input#s-var-force_reload_whole_mags(type='checkbox', v-model='vars.force_reload_whole_mags')
+					label(for='s-var-force_reload_whole_mags') Reload whole mags
+				.input-checkbox
+					input#s-var-spotting(type='checkbox', v-model='vars.spotting')
+					label(for='s-var-spotting') 3D spotting
+				.input-checkbox
+					input#s-var-auto_balance(type='checkbox', v-model='vars.auto_balance')
+					label(for='s-var-auto_balance') Auto balance
+				.input-checkbox
+					input#s-var-third_person_cam(type='checkbox', v-model='vars.third_person_cam')
+					label(for='s-var-third_person_cam') Allow 3rd person vehicle cam
+
+			.group
+				fieldset
+					legend Vehicles
+
+					.input-checkbox
+						input#s-var-vehicle_spawn_allowed(type='checkbox', v-model='vars.vehicle_spawn_allowed')
+						label(for='s-var-vehicle_spawn_allowed') Enable vehicles
+					.input-text(v-if='vars.vehicle_spawn_allowed')
+						label(for='s-var-vehicle_spawn_delay') Vehicle spawn delay
+						input#s-var-vehicle_spawn_delay(type='number', min=1, max=100, v-model='vars.vehicle_spawn_delay')
+						span %
+
+				fieldset
+					legend Combat settings
+
+					.input-text
+						label(for='s-var-bullet_damage') Bullet damage
+						input#s-var-bullet_damage(type='number', min=1, max=100, v-model='vars.bullet_damage')
+						span %
+					.input-text
+						label(for='s-var-soldier_health') Soldier health
+						input#s-var-soldier_health(type='number', min=1, max=100, v-model='vars.soldier_health')
+						span %
+					.input-text
+						label(for='s-var-player_respawn_time') Respawn delay
+						input#s-var-player_respawn_time(type='number', min=0, max=100, v-model='vars.player_respawn_time')
+						span %
+
+				fieldset
+					legend Tickets
+					p User friendly list of actual ticket counts per gamemode
+
+					.input-text
+						label(for='s-var-game_mode_counter') Ticket count
+						input#s-var-game_mode_counter(type='number', min=1, max=100, v-model='vars.game_mode_counter')
+						span %
+					.input-text
+						label(for='s-var-ticket_bleed_rate') Ticket bleed rate
+						input#s-var-ticket_bleed_rate(type='number', min=1, max=100, v-model='vars.ticket_bleed_rate')
+						span %
+
+			.group
+				fieldset
+					legend Round settings
+
+					.input-text
+						label(for='s-var-round_start_player_count') Round start player count
+						input#s-var-round_start_player_count(type='number', min=0, max=100, v-model='vars.round_start_player_count')
+					.input-text
+						label(for='s-var-round_restart_player_count') Round restart player count
+						input#s-var-round_restart_player_count(type='number', min=0, max=100, v-model='vars.round_restart_player_count')
+					.input-text
+						label(for='s-var-round_lockdown_countdown') Lockdown countdown
+						input#s-var-round_lockdown_countdown(type='number', min=0, max=100, v-model='vars.round_lockdown_countdown')
+					.input-text
+						label(for='s-var-round_warmup_timeout') Warmup timeout
+						input#s-var-round_warmup_timeout(type='number', min=0, max=100, v-model='vars.round_warmup_timeout')
+					.input-text
+						label(for='s-var-round_time_limit') Round time limit
+						input#s-var-round_time_limit(type='number', min=1, max=100, v-model='vars.round_time_limit')
+						span %
+
+				fieldset
+					legend Team killing
+
+					.input-checkbox
+						input#s-var-teamkill_kick(type='checkbox', v-model='teamkill_kick')
+						label(for='s-var-teamkill_kick') Kick for team kills
+					div(v-if='teamkill_kick')
+						.input-text
+							label(for='s-var-teamkill_count_for_kick') TKs required for kick
+							input#s-var-teamkill_count_for_kick(type='number', min=1, max=100, v-model='vars.teamkill_count_for_kick')
+						.input-text
+							label(for='s-var-teamkill_value_for_kick') Value required for kick
+							input#s-var-teamkill_value_for_kick(type='number', min=0, max=100, v-model='vars.teamkill_value_for_kick')
+						.input-text
+							label(for='s-var-teamkill_value_increase') Value increase per TK
+							input#s-var-teamkill_value_increase(type='number', min=0, max=100, v-model='vars.teamkill_value_increase')
+						.input-text
+							label(for='s-var-teamkill_value_decrease_per_second') Value decrease per second
+							input#s-var-teamkill_value_decrease_per_second(type='number', min=0, max=100, v-model='vars.teamkill_value_decrease_per_second')
+
+						p(v-if='vars.teamkill_value_increase')
+							| Players will be kicked for teamkilling {{vars.teamkill_value_for_kick / vars.teamkill_value_increase}} players/second ({{vars.teamkill_value_for_kick / vars.teamkill_value_increase * 60}} players/minute).
+							span(v-if='vars.teamkill_value_decrease_per_second')  Players are forgiven for one teamkill per {{vars.teamkill_value_increase / vars.teamkill_value_decrease_per_second}} seconds.
+
+					.input-checkbox
+						input#s-var-teamkill_ban(type='checkbox', v-model='teamkill_ban')
+						label(for='s-var-teamkill_ban') Ban for team kills
+					.input-text(v-if='teamkill_ban')
+						label(for='s-var-teamkill_kick_for_ban') Kicks required for ban
+						input#s-var-teamkill_kick_for_ban(type='number', min=1, max=100, v-model='vars.teamkill_kick_for_ban')
+
+		section
+			h1 Reserved slots
+			.input-checkbox
+				input#s-var-aggressive_join(type='checkbox', v-model='vars.aggressive_join')
+				label(for='s-var-aggressive_join') Aggressive join
+			.player-list
+				.input-text
+					label(for='s-add-vip') Add reserved slot
+					input#s-add-vip(type='text', v-model='addVipPlayerName', v-on='keydown: addVip | key enter')
+				ul
+					li(v-repeat='vips | sort')
+						.player_name {{$value}}
+						.remove(v-on='click: removeVip($value)') Remove
