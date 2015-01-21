@@ -1,0 +1,38 @@
+{
+	"name": "RealCON-plugin-devkit",
+	"version": "0.0.0",
+	"description": "RealCON plugin development kit.",
+	"homepage": "https://github.com/RealCON/plugin-devkit",
+	"maintainers": [{
+		"name": "Kim Silkebækken",
+		"email": "support@realcon.rocks",
+		"web": "https://github.com/RealCON"
+	}],
+	"devDependencies" : {
+		"del": "*",
+		"jade": "1.2",
+		"nib": "*",
+		"stylus": "*",
+		"uglify-js": "*",
+		"webpack": "*",
+
+		"coffee-loader": "*",
+		"css-loader": "*",
+		"exports-loader": "*",
+		"file-loader": "*",
+		"imports-loader": "*",
+		"raw-loader": "*",
+		"stylus-loader": "*",
+		"template-html-loader": "*",
+
+		"gulp": "*",
+		"gulp-jade": "*",
+		"gulp-htmlmin": "*",
+		"gulp-inline": "*",
+		"gulp-stylus": "*",
+		"gulp-util": "*"
+	},
+	"engines": {
+		"node": ">=0.10"
+	}
+}
