@@ -1,4 +1,3 @@
-import re
 import logging
 import simplejson as json
 
@@ -7,7 +6,7 @@ from tornado.gen import coroutine
 from lib.plugin import (RealCONPlugin, RealCONPluginBaseHandler, on_event, run_every)
 
 
-class ServerPlugin(RealCONPlugin):
+class ServerSettingsPlugin(RealCONPlugin):
 	'''RealCON server settings plugin
 	'''
 	__plugin_name__ = 'Server Settings'
@@ -16,7 +15,7 @@ class ServerPlugin(RealCONPlugin):
 	__plugin_version__ = '1.0.0'
 	__plugin_entrypoint__ = 'assets/js/main.bundle.js'
 
-	class ServerSpectatorHandler(RealCONPluginBaseHandler):
+	class ServerSettingsSpectatorHandler(RealCONPluginBaseHandler):
 		@coroutine
 		def get(self):
 			players = yield self.plugin.api.command.spectator_list_list()
@@ -45,7 +44,7 @@ class ServerPlugin(RealCONPlugin):
 				'player_name': player_name,
 			})
 
-	class ServerVipHandler(RealCONPluginBaseHandler):
+	class ServerSettingsVipHandler(RealCONPluginBaseHandler):
 		@coroutine
 		def get(self):
 			list_limit = 100
@@ -82,14 +81,14 @@ class ServerPlugin(RealCONPlugin):
 				'player_name': player_name,
 			})
 
-	class ServerExportHandler(RealCONPluginBaseHandler):
+	class ServerSettingsExportHandler(RealCONPluginBaseHandler):
 		@coroutine
 		def get(self):
 			config_map = yield self.plugin.api.var.get_config_map()
 
 			self.write(config_map)
 
-	class ServerVarsHandler(RealCONPluginBaseHandler):
+	class ServerSettingsVarsHandler(RealCONPluginBaseHandler):
 		@coroutine
 		def get(self):
 			vars = yield self.plugin.api.var.get_all()
@@ -146,11 +145,11 @@ class ServerPlugin(RealCONPlugin):
 			})
 
 	__plugin_handlers__ = [
-		(r'/export', ServerExportHandler),
-		(r'/vars', ServerVarsHandler),
-		(r'/spectator', ServerSpectatorHandler),
-		(r'/vip', ServerVipHandler),
+		(r'/export', ServerSettingsExportHandler),
+		(r'/vars', ServerSettingsVarsHandler),
+		(r'/spectator', ServerSettingsSpectatorHandler),
+		(r'/vip', ServerSettingsVipHandler),
 	]
 
 
-__plugin__ = ServerPlugin
+__plugin__ = ServerSettingsPlugin

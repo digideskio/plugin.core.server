@@ -1,20 +1,22 @@
 var info = require('./package.json')
 
-var fs = require('fs')
 var path = require('path')
-var del = require('del')
 var gulp = require('gulp')
-var stylus = require('gulp-stylus')
-var nib = require('nib')
-var jade = require('gulp-jade')
-var htmlmin = require('gulp-htmlmin')
+var imagemin = require('gulp-imagemin')
 var gutil = require('gulp-util')
-var inline = require('gulp-inline')
+var del = require('del')
+var watch = require('gulp-watch')
 var webpack = require('webpack')
+var browserSync = require('browser-sync')
+var reload = browserSync.reload
 var webpackCompiler
 
 // common config
 var config = {
+	jade: {
+		pretty: false,
+	},
+	sass: {},
 	htmlmin: {
 		collapseBooleanAttributes: true,
 		collapseWhitespace: true,
@@ -28,24 +30,24 @@ var config = {
 	},
 }
 
-var __output_dir = './public'
-var __assets_src = './assets/'
-var __assets_dest = __output_dir + '/assets/'
-var __views_src = './views/'
-var __views_dest = __output_dir + '/views/'
-var __entrypoint = 'main.js'
+var __components_src = __dirname + '/plugin/components/'
+var __assets_src = __dirname + '/plugin/assets/'
+var __assets_dest = __dirname + '/static/assets/'
 
-var globs = {
-	js: __assets_src + 'js/**/*.js',
-	styl: __assets_src + 'styl/*.styl',
-	jade: __views_src + '**/*.jade',
-}
+gulp.task('clean', function(cb) {
+	del([
+		'./static/*',
+	], cb)
+})
 
-gulp.task('webpack', ['stylus', 'jade'], function(callback) {
+gulp.task('webpack', function(callback) {
 	webpackCompiler.run(function(err, stats) {
 		if (err) {
 			throw new gutil.PluginError('webpack', err)
 		}
+
+		config.jade.locals.MAIN_CSS_FILE = 'main.' + stats.hash + '.bundle.css'
+		config.jade.locals.MAIN_JS_FILE = 'main.' + stats.hash + '.bundle.js'
 
 		gutil.log('webpack', stats.toString({
 			colors: true,
@@ -55,132 +57,129 @@ gulp.task('webpack', ['stylus', 'jade'], function(callback) {
 	})
 })
 
-gulp.task('stylus', function() {
-	return gulp
-		.src(globs.styl)
-		.pipe(stylus(config.stylus))
-		.pipe(gulp.dest(__assets_dest + 'css/'))
+gulp.task('imagemin', ['webpack'], function() {
+	return gulp.src('static/assets/img/**/*')
+		.pipe(imagemin())
+		.pipe(gulp.dest('static/assets/img/'))
 })
 
-gulp.task('jade', function(cb) {
-	return gulp
-		.src(__views_src + '/plugin.jade')
-		.pipe(jade(config.jade))
-		.pipe(htmlmin(config.htmlmin))
-		.pipe(gulp.dest(__views_dest))
-})
-
-gulp.task('clean', function(cb) {
-	del([__output_dir + '/*'])
-	cb()
-})
-
-gulp.task('sync', ['clean'], function() {
-	return gulp
-		.src(__assets_src + 'img/**')
-		.pipe(gulp.dest(__assets_dest))
-})
+gulp.task('entrypoint', ['webpack', 'imagemin'])
 
 // handle dev/prod config
-gulp.task('set-env-dev', ['sync'], function() {
+gulp.task('set-env-dev', function() {
 	config.ENV = 'dev'
 
-	config.stylus = {
-			debug: true,
-			compress: false,
-			'include css': true,
-			define: {
-				DEV: true,
-			},
-			use: [
-				nib(),
-			],
-			import: [
-				'nib',
-			],
-		}
-	config.jade = {
-		pretty: false,
-		compileDebug: true,
-		locals: {
-			DEBUG: true,
-		},
+	config.sass = {
+		includePaths: [
+			__assets_src + '/sass/',
+		],
+		indentedSyntax: 'sass',
+	}
+	config.jade.locals = {
+		DEBUG: true,
+	}
+	var htmlConfig = {
+		root: __assets_src,
+		attrs: ['link:href', 'script:src', 'img:src'],
 	}
 	config.webpack = {
 		cache: true,
 		debug: true,
 		devtool: 'source-map',
 		entry: {
-			main: __assets_src + 'js/' + __entrypoint,
+			main: [__components_src + '/main.js'],
 		},
 		output: {
-			path: __assets_dest + 'js/',
-			filename: '[name].bundle.js',
-			chunkFilename: '[id].chunk.js',
-			publicPath: '/js/',
+			path: __assets_dest,
+			filename: 'js/[name].bundle.js',
+			chunkFilename: '[id].[hash].chunk.js',
+			publicPath: '/static/',
 		},
 		plugins: [
-			new webpack.BannerPlugin(info.name + '\n' + info.version + ':' + Date.now() + ' [development build]'),
+			new webpack.BannerPlugin(info.name + '\n' + info.version + ' [development build]'),
 			new webpack.DefinePlugin({
-				DEV: true,
+				DEBUG: true,
 			}),
-		]
+		],
+		module: {
+			loaders: [
+				{ test: /\.sass/, loader: 'css?root=' + __assets_src + '!autoprefixer?browsers=last 2 version!sass?' + JSON.stringify(config.sass) },
+				{ test: /\.jade$/, loader: 'html?' + JSON.stringify(htmlConfig) + '!jade-html?' + JSON.stringify(config.jade) },
+				{ test: /img\/.*\.(jpg|png|gif|svg)$/, loader: 'file?name=img/[sha512:hash:base64:6].[ext]' },
+				{ test: /font\/.*\.(eot|woff2?|ttf|svg)[?#]?.*$/, loader: 'file?name=font/[sha512:hash:base64:6].[ext]' },
+				{ test: /\.js$/, exclude: [/node_modules/, /lib\/ext/], loader: 'babel' },
+			],
+		},
 	}
+
 	webpackCompiler = webpack(config.webpack)
 })
 
-gulp.task('set-env-prod', ['clean'], function() {
+gulp.task('set-env-prod', function() {
 	config.ENV = 'prod'
 
-	config.stylus = {
-		debug: false,
-		compress: true,
-		'include css': true,
-		define: {
-			DEV: false,
-		},
-		use: [
-			nib(),
+	config.sass = {
+		includePaths: [
+			__assets_src + '/sass/',
 		],
-		import: [
-			'nib',
-		],
+		indentedSyntax: 'sass',
+		omitSourceMapUrl: true,
+		outputStyle: 'compressed',
 	}
-	config.jade = {
-		pretty: false,
-		compileDebug: false,
-		locals: {
-			DEBUG: false,
-		},
+	config.jade.locals = {
+		DEBUG: false,
+	}
+	var htmlConfig = {
+		root: __assets_src,
+		attrs: ['link:href', 'script:src', 'img:src'],
 	}
 	config.webpack = {
-		cache: true,
+		cache: false,
+		debug: false,
 		entry: {
-			main: __assets_src + 'js/' + __entrypoint,
+			main: [__components_src + '/main.js'],
 		},
 		output: {
-			path: __assets_dest + 'js/',
-			filename: '[name].bundle.js',
-			chunkFilename: '[id].chunk.js',
-			publicPath: '/js/',
+			path: __assets_dest,
+			filename: 'js/[name].bundle.js',
+			chunkFilename: '[id].[hash].chunk.js',
+			publicPath: '/static/',
 		},
 		plugins: [
-			new webpack.BannerPlugin(info.name + '\n' + info.version + ':' + Date.now() + ' [production build]'),
+			new webpack.BannerPlugin(info.name + '\n' + info.version + ' [production build]'),
 			new webpack.DefinePlugin({
-				DEV: false,
+				DEBUG: false,
 			}),
 			new webpack.optimize.DedupePlugin(),
 			new webpack.optimize.AggressiveMergingPlugin(),
 			new webpack.optimize.UglifyJsPlugin()
-		]
+		],
+		module: {
+			loaders: [
+				{ test: /\.sass/, loader: 'css?root=' + __assets_src + '!autoprefixer?browsers=last 2 version!sass?' + JSON.stringify(config.sass) },
+				{ test: /\.jade$/, loader: 'html?' + JSON.stringify(htmlConfig) + '!jade-html?' + JSON.stringify(config.jade) },
+				{ test: /img\/.*\.(jpg|png|gif|svg)$/, loader: 'file?name=img/[sha512:hash:base64:6].[ext]' },
+				{ test: /font\/.*\.(eot|woff2?|ttf|svg)[?#]?.*$/, loader: 'file?name=font/[sha512:hash:base64:6].[ext]' },
+				{ test: /\.js$/, exclude: [/node_modules/, /lib\/ext/], loader: 'babel' },
+			],
+		},
 	}
+
 	webpackCompiler = webpack(config.webpack)
 })
 
 // main tasks
-gulp.task('development', ['set-env-dev'], function() {
-	gulp.watch(globs.js, ['webpack'])
-	gulp.watch(globs.styl, ['webpack'])
-	gulp.watch(globs.jade, ['webpack'])
+gulp.task('development', ['set-env-dev', 'entrypoint'], function() {
+	browserSync({
+		notify: false,
+		port: 3000,
+	})
+
+	gulp.watch('plugin/components/**/*', ['entrypoint'])
+
+	watch('static/assets/**/*.(js|css)', function(ev) {
+		reload(path.basename(ev.path))
+	})
 })
-gulp.task('production', ['set-env-prod', 'jade', 'sync'])
+
+gulp.task('production', ['set-env-prod', 'entrypoint'])

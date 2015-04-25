@@ -1,38 +1,48 @@
 {
-	"name": "RealCON-plugin-devkit",
-	"version": "0.0.0",
-	"description": "RealCON plugin development kit.",
-	"homepage": "https://github.com/RealCON/plugin-devkit",
+	"name": "realcon-plugin-server-settings",
+	"version": "0.0.1a1",
+	"description": "RealCON Server Settings plugin.",
+	"homepage": "https://github.com/RealCON/realcon-plugin-server-settings",
 	"maintainers": [{
-		"name": "Kim Silkebækken",
-		"email": "support@realcon.rocks",
-		"web": "https://github.com/RealCON"
+		"name": "Realcon",
+		"email": "support@realcon.rocks"
 	}],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/RealCON/realcon-plugin-server-settings.git"
+	},
 	"devDependencies" : {
+		"browser-sync": "*",
 		"del": "*",
-		"jade": "1.2",
-		"nib": "*",
-		"stylus": "*",
+		"gulp": "*",
+		"jade": "*",
+		"marked": "*",
 		"uglify-js": "*",
 		"webpack": "*",
 
-		"coffee-loader": "*",
+		"autoprefixer-loader": "*",
+		"babel-loader": "*",
 		"css-loader": "*",
 		"exports-loader": "*",
+		"extract-text-webpack-plugin": "*",
 		"file-loader": "*",
+		"html-loader": "*",
+		"image-webpack-loader": "*",
 		"imports-loader": "*",
+		"jade-html-loader": "*",
+		"json-loader": "*",
 		"raw-loader": "*",
-		"stylus-loader": "*",
-		"template-html-loader": "*",
+		"node-sass": "*",
+		"sass-loader": "*",
+		"style-loader": "*",
+		"url-loader": "*",
 
-		"gulp": "*",
-		"gulp-jade": "*",
 		"gulp-htmlmin": "*",
-		"gulp-inline": "*",
-		"gulp-stylus": "*",
-		"gulp-util": "*"
-	},
-	"engines": {
-		"node": ">=0.10"
+		"gulp-imagemin": "*",
+		"gulp-jade": "*",
+		"gulp-rename": "*",
+		"gulp-selectors": "*",
+		"gulp-util": "*",
+		"gulp-watch": "*"
 	}
 }
