@@ -143,7 +143,7 @@ class ServerSettingsPlugin(RealCONPlugin):
 				if not method:
 					continue
 				try:
-					method(value)
+					yield method(value)
 					logging.info(value)
 					updated[key] = value
 				except Exception as e:
