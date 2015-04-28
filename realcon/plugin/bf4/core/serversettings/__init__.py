@@ -3,7 +3,7 @@ import simplejson as json
 
 from tornado.gen import coroutine
 
-from lib.plugin import (RealCONPlugin, RealCONPluginBaseHandler, on_event, run_every)
+from lib.plugin import (RealCONPlugin, RealCONPluginBaseHandler, on_event, run_every, require_permission)
 
 
 class ServerSettingsPlugin(RealCONPlugin):
@@ -14,6 +14,11 @@ class ServerSettingsPlugin(RealCONPlugin):
 	__plugin_email__ = 'kim@silkebaekken.no'
 	__plugin_version__ = '1.0.0'
 	__plugin_entrypoint__ = 'assets/js/main.bundle.js'
+	__plugin_permissions__ = (
+		('global.vars_edit', 'Global', 'Edit server vars'),
+		('server.spectator_list_edit', 'Server', 'Edit spectator list'),
+		('server.vip_list_edit', 'Server', 'Edit VIP list'),
+	)
 
 	class ServerSettingsSpectatorHandler(RealCONPluginBaseHandler):
 		@coroutine
@@ -25,6 +30,7 @@ class ServerSettingsPlugin(RealCONPlugin):
 			})
 
 		@coroutine
+		@require_permission('server.spectator_list_edit')
 		def post(self):
 			player_name = self.get_argument('player_name')
 			yield self.plugin.api.command.spectator_list_add(player_name)
@@ -35,6 +41,7 @@ class ServerSettingsPlugin(RealCONPlugin):
 			})
 
 		@coroutine
+		@require_permission('server.spectator_list_edit')
 		def delete(self):
 			player_name = self.get_argument('player_name')
 			yield self.plugin.api.command.spectator_list_remove(player_name)
@@ -62,6 +69,7 @@ class ServerSettingsPlugin(RealCONPlugin):
 			})
 
 		@coroutine
+		@require_permission('server.vip_list_edit')
 		def post(self):
 			player_name = self.get_argument('player_name')
 			yield self.plugin.api.command.reserved_slots_list_add(player_name)
@@ -72,6 +80,7 @@ class ServerSettingsPlugin(RealCONPlugin):
 			})
 
 		@coroutine
+		@require_permission('server.vip_list_edit')
 		def delete(self):
 			player_name = self.get_argument('player_name')
 			yield self.plugin.api.command.reserved_slots_list_remove(player_name)
@@ -99,6 +108,7 @@ class ServerSettingsPlugin(RealCONPlugin):
 			self.write(vars)
 
 		@coroutine
+		@require_permission('global.vars_edit')
 		def put(self):
 			vars = self.get_argument('vars')
 			vars_obj = json.loads(vars)
