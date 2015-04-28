@@ -88,7 +88,6 @@ window.realcon.registerPlugin(
 						})
 
 						config = config.sort().join('\n')
-						console.log(config)
 					})
 				},
 				addSpectator() {
