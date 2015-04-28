@@ -136,7 +136,19 @@ window.realcon.registerPlugin(
 				},
 			},
 			filters: {
-				sort: (val) => val.slice().sort(),
+				sort: (val) => {
+					// Case-insensitive sort from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+					var map = val.slice().map((e, i) => {
+						return {
+							index: i,
+							value: e.toLowerCase(),
+						}
+					})
+
+					map.sort((a, b) => +(a.value > b.value) || +(a.value === b.value) - 1)
+
+					return map.map((e) => val[e.index])
+				}
 			},
 		})
 	})
